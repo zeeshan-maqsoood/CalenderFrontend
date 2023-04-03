@@ -8,13 +8,15 @@ import { AddEventApi } from '../API/EventsApi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { EditDataApi } from '../API/EventsApi';
+import { EditDataApi, getPrivateUserApi } from '../API/EventsApi';
 
 function ModalComponent({ edit, row, navbar }) {
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const loginUser = JSON.parse(localStorage.getItem('loginUser'));
+  console.log(loginUser, 'loginUser');
   const initialValues = {
     title: '',
     description: '',
@@ -24,7 +26,16 @@ function ModalComponent({ edit, row, navbar }) {
     type: '',
   };
   const [editData, setEditData] = useState(row);
+  const [typeofValue, setTypeofValue] = useState(null);
+  const [isPublic, setIsPublic] = useState(true);
   const SidebarValue = useSelector((state) => state.events.SidebarValue);
+  const loginUserValue = useSelector(
+    (state) => state.events?.allData?.loginUser
+  );
+  console.log(loginUserValue, 'loginUserValue');
+  const [user, setUser] = useState([]);
+  const [id,setId]=useState([])
+  console.log(loginUserValue, 'loginUserValue');
   const eventStatus = JSON.parse(localStorage.getItem('events'));
   const { values, touched, errors, handleBlur, handleChange, handleSubmit } =
     useFormik({
@@ -32,7 +43,7 @@ function ModalComponent({ edit, row, navbar }) {
       validationSchema: eventSchema,
       onSubmit: (values, action) => {
         try {
-          AddEventApi(values, dispatch);
+          AddEventApi(values, id, dispatch);
           setShow(false);
           if (eventStatus === 200) {
             toast.success('Your Event has been Added', {
@@ -49,17 +60,35 @@ function ModalComponent({ edit, row, navbar }) {
         } catch (error) {}
       },
     });
+    console.log(values,'values')
 
   const handleChangeFunction = (e) => {
     const { name, value } = e.target;
     setEditData({ ...editData, [name]: value });
   };
-  
+  useEffect(() => {
+    const id = loginUser.data._id;
+  }, []);
+  console.log(user, 'userData');
   const handleSubmitFunction = () => {
     EditDataApi(editData, dispatch);
     setShow(false);
   };
+  const handleLoginUser = (e) => {
+    console.log(e.target.value, 'value');
+    setId(e.target.value)
+  };
+  const handleTypeOfChange = (e) => {
+    const value = e.target.value;
+    setTypeofValue(value);
+    if (value === 'Private') {
+      setIsPublic(false);
+    } else {
+      setIsPublic(true);
+    }
+  };
 
+  console.log(typeofValue, 'typeOf');
   return (
     <>
       <Button variant="primary" onClick={handleShow}>
@@ -236,14 +265,37 @@ function ModalComponent({ edit, row, navbar }) {
                 <Form.Select
                   aria-label="Default select example"
                   name="type"
-                  value={values.type}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                  onChange={handleTypeOfChange}
+                  value={typeofValue}
                 >
                   <option>Select type</option>
                   <option value="Public">Public</option>
                   <option value="Private">Private</option>
                 </Form.Select>
+                {!isPublic ? (
+                  <>
+                    <Form.Label>Assign To</Form.Label>
+                    <Form.Select
+                      aria-label="Default select example"
+                      name="user"
+                      onChange={handleLoginUser}
+                    >
+                      <option>Select type</option>
+                      {loginUserValue?.map((data) => {
+                        return (
+                          <>
+                            <option
+                              value={data.UserName && data._id}
+                              key={data._id}
+                            >
+                              {data.UserName}
+                            </option>
+                          </>
+                        );
+                      })}
+                    </Form.Select>
+                  </>
+                ) : null}
                 <p className="text-danger">
                   {errors.type && touched.type ? errors.type : null}
                 </p>

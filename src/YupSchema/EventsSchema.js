@@ -8,7 +8,7 @@ export const eventSchema = Yup.object({
     .required('Date is required')
     .min(new Date(), 'Date cannot be in the past'),
   startsAt: Yup.string()
-    
+
     .required('Time is required')
 
     .typeError('Invalid time'),
@@ -17,5 +17,4 @@ export const eventSchema = Yup.object({
     .required('Time is required')
 
     .typeError('Invalid time'),
-  type: Yup.string().required('please Choose type'),
 });

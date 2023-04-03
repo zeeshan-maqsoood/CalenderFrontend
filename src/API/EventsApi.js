@@ -1,7 +1,17 @@
 import axios from 'axios';
-import { setEvents } from '../Redux/EventsSlice';
+import { setEvents, setLogin } from '../Redux/EventsSlice';
 
-export const AddEventApi = async (values, dispatch) => {
+export const AddEventApi = async (values, id,dispatch) => {
+const {title,description,startsAt,endsAt,type,date}=values
+const value={
+  title:title,
+  description:description,
+  date:date,
+  startsAt:startsAt,
+  endsAt:endsAt,
+  type:type,
+  id:id
+}
   try {
     const res = await axios.post('http://localhost:5000', {
       headers: {
@@ -35,6 +45,7 @@ export const getEventsAPi = async (dispatch) => {
       setEvents({
         PublicEvents: res.data.PublicEvents,
         PrivateEvents: res.data.PrivateEvents,
+        loginUser: res.data.loginUser,
       })
     );
   } catch (error) {
